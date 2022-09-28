@@ -6,4 +6,4 @@ Some ground rules for this repo:
 - please respect the work of others
 - DO NOT delete content from previous committs unless content is not working
 - make sure to have fun while coding
-- most importantly NO PROFANITY
+- NO PROFANITY
