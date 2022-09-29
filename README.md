@@ -6,7 +6,6 @@ Some ground rules for this repo:
 - please respect the work of others
 - DO NOT delete content from previous committs unless content is not working
 - make sure to have fun while coding
-- NO PROFANITY
 
 Failure to follow these rules and you risk being banned
 Have fun!
