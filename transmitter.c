@@ -1,85 +1,108 @@
-# include <Servo.h>
 
-Servo myservo;  // create servo object to control a servo
+#include <RadioHead.h>
+#include <RHCRC.h>
+#include <RHGenericDriver.h>
+#include <RH_ASK.h>
 
+// Include RadioHead Amplitude Shift Keying Library
+#include <RH_ASK.h>
+// Include dependant SPI Library 
+#include <SPI.h>   
 
-const int LeftInput = 2;
-const int RightInput = 4;
-const int LeftBulb = 6;
-const int RightBulb = 8;
+#define DEBUG_PIN 3
+#define SWITCH_PIN 4
+// Create Amplitude Shift Keying Object
+#define RADIOHEAD_BAUD 2000 
+#define RADIOHEAD_TX_PIN 12 // UNO - Pin of the 433MHz transmitter
+#define RADIOHEAD_RX_PIN -1 // UNO - Pin of the 433MHz receiver (here not used)
 
+RH_ASK rf_driver(RADIOHEAD_BAUD, RADIOHEAD_RX_PIN, RADIOHEAD_TX_PIN);
 
+int buttonState = 0;
+int sensorPin = A0;
+int sensorValue = 0;
 
-void setup() {
-  Serial.begin(9600);
-  
-  // put your setup code here, to run once:
-  myservo.attach(10);
-  pinMode(LeftInput, INPUT);
-  pinMode(RightInput, INPUT);
-  pinMode(LeftBulb, OUTPUT);
-  pinMode(RightBulb, OUTPUT);
+// JOYSTICK 
+int analogPinX = A0; // potentiometer wiper (middle terminal) connected to analog pin 0
+int analogPinY = A1; // potentiometer wiper (middle terminal) connected to analog pin 1
+int valY = 0;  // variable to store the value read
+int valX = 0;  // variable to store the value read
+
+void setup()
+{
+    Serial.begin(9600);
+    while (!Serial);
+    
+    pinMode(DEBUG_PIN, OUTPUT); // DEBUG
+    pinMode(SWITCH_PIN, INPUT); // SWITCH
+
+    // Initialize ASK Object
+    rf_driver.init();
+    Serial.println("begin");
 }
-int incPulse(int val, int inc){
-   if( val + inc  > 150 )
-      return 0 ;
-   else
-       return val + inc;  
- } 
- int i;
- char buffer[100];
- int LeftInput_state = 0;
- int RightInput_state = 0;
- int val = 0;
- 
-void loop() {
-  LeftInput_state = digitalRead(LeftInput);
-  RightInput_state = digitalRead(RightInput);
-  
-  sprintf(buffer, "i = %d,%5d val = %d,%5d Left input = %d\n", i, val, LeftInput_state );
-  Serial.println(buffer);
-  i = i +1;
-  // put your main code here, to run repeatedly:
 
- /*   if (RightButton = HIGH)(;
-       (Steervar = Steervar + 10);
-    else if (RightButton = LOW);
-       (Steervar = Steervar = 10);
-       )
-    if (LeftButton = HIGH) (;
-       (Steervar = Steervar - 10);
-    else if (LeftButton = LOW);
-       (Steervar = Steervar = 10);
-       )*/
-  /*8
+char *xmsg, *ymsg;
+void loop()
+{    
+   valX = analogRead(analogPinX);  // read the input pin
+   Serial.print("valX = ");
+   Serial.println(valX);
+   valY = analogRead(analogPinY);  // read the input pin
+   Serial.print("valY = ");
+   Serial.println(valY);
 
-   delay(10);
-    sprintf (buff, "Steervar = %5d, \n",  Steervar);
-    Serial.print(buff);
-*/
+   digitalWrite(DEBUG_PIN, LOW);
 
+   // buttonState = digitalRead(SWITCH_PIN);
+   //if (buttonState == HIGH) {
+   //if (valX
 
-  // val = incPulse( myservo.read(), 1);
+   xmsg = (char*) "notset";
+   if (valX > 600)
+   {
+      // forward 
+      xmsg = (char*) "Forward";
+   } 
+   if (valX < 400)
+   {
+      // backward 
+      xmsg = (char*) "backward";
+   } 
+   if (valX >= 400 && valX <= 600)
+   {
+      // do nothing 
+      xmsg = (char*) "release";
+   }
 
+// buttonState = digitalRead(SWITCH_PIN);
+   //if (buttonState == HIGH) {
+   //if (valY
+
+   if  (valY > 600)
+   {
+      // right
+      ymsg = (char*) "right__";
+   }
    
+   if (valY < 400)
+   {
+      // left
+      ymsg = (char*) "left___";
+   }
 
-   if (LeftInput_state == HIGH) {
-     digitalWrite (LeftBulb, HIGH);
-     digitalWrite (RightBulb, LOW);
-     Serial.println ("Left");
-     //val = 0
-      myservo.write(150);
+   if (valY >= 400 && valY <= 600)
+   {
+      // left
+      ymsg = (char*) "release";
    }
-   else if (RightInput_state == HIGH) {
-      digitalWrite (LeftBulb, LOW);
-      digitalWrite (RightBulb, HIGH);
-      Serial.println ("Right");
-      myservo.write(0);
-   }
-   else {
-      digitalWrite (LeftBulb, LOW);
-      digitalWrite (RightBulb, LOW);
-      Serial.println ("Middle");
-      myservo.write(75);
-   }
-}
+   Serial.print(": xmsg = ");
+   Serial.println(xmsg);
+   Serial.print(": ymsg = ");
+   Serial.println(ymsg);
+   rf_driver.send((uint8_t *)xmsg, strlen(xmsg));
+    rf_driver.send((uint8_t *)ymsg, strlen(ymsg));
+   //digitalWrite(DEBUG_PIN, HIGH);
+   rf_driver.waitPacketSent(); 
+
+   delay(1);
+} 
