@@ -30,17 +30,33 @@ int valX = 0;  // variable to store the value read
 
 void setup()
 {
-    Serial.begin(9600);
+#ifdef RH_HAVE_SERIAL
+    Serial.begin(9600);	  // Debugging only
     while (!Serial);
+    Serial.println("start");
+#endif
     
     pinMode(DEBUG_PIN, OUTPUT); // DEBUG
     pinMode(SWITCH_PIN, INPUT); // SWITCH
 
-    // Initialize ASK Object
-    rf_driver.init();
-    Serial.println("begin");
+    if (!rf_driver.init())
+#ifdef RH_HAVE_SERIAL
+         Serial.println("init failed");
+#else
+	;
+#endif
 }
 
+void loop()
+{
+    const char *msg = "hello";
+
+    rf_driver.send((uint8_t *)msg, strlen(msg));
+    rf_driver.waitPacketSent();
+    delay(200);
+}
+
+/*
 char *xmsg, *ymsg;
 void loop()
 {    
@@ -106,3 +122,4 @@ void loop()
 
    delay(1);
 } 
+*/
