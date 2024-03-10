@@ -30,18 +30,18 @@ int valX = 0;  // variable to store the value read
 
 void setup()
 {
-#ifdef RH_HAVE_SERIAL
+   #ifdef RH_HAVE_SERIAL
     Serial.begin(9600);	  // Debugging only
-    while (!Serial);
-    Serial.println("start");
+   while (!Serial);
+Serial.println("start");
 #endif
-    
-    pinMode(DEBUG_PIN, OUTPUT); // DEBUG
-    pinMode(SWITCH_PIN, INPUT); // SWITCH
+   
+   pinMode(DEBUG_PIN, OUTPUT); // DEBUG
+   pinMode(SWITCH_PIN, INPUT); // SWITCH
 
-    if (!rf_driver.init())
+   if (!rf_driver.init())
 #ifdef RH_HAVE_SERIAL
-         Serial.println("init failed");
+   Serial.println("init failed");
 #else
 	;
 #endif
@@ -90,22 +90,16 @@ void loop()
       xmsg = (char*) "release";
    }
 
-// buttonState = digitalRead(SWITCH_PIN);
-   //if (buttonState == HIGH) {
-   //if (valY
-
    if  (valY > 600)
    {
       // right
       ymsg = (char*) "right__";
-   }
-   
+   }   
    if (valY < 400)
    {
       // left
       ymsg = (char*) "left___";
    }
-
    if (valY >= 400 && valY <= 600)
    {
       // left
@@ -115,8 +109,9 @@ void loop()
    Serial.println(xmsg);
    Serial.print(": ymsg = ");
    Serial.println(ymsg);
+
    rf_driver.send((uint8_t *)xmsg, strlen(xmsg));
-    rf_driver.send((uint8_t *)ymsg, strlen(ymsg));
+   rf_driver.send((uint8_t *)ymsg, strlen(ymsg));
    //digitalWrite(DEBUG_PIN, HIGH);
    rf_driver.waitPacketSent(); 
 
